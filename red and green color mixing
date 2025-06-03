@@ -1,0 +1,129 @@
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+
+
+using namespace std;
+
+struct PPMImage {
+    public:
+    int width;
+    int height;
+    int maxColorValue;
+    vector<unsigned char> pixels; // Stores pixel data in RGB format
+
+    
+    PPMImage() : width(0), height(0), maxColorValue(255) {}
+
+    PPMImage(const PPMImage& img1 ,const PPMImage& img2 ){
+        width= img1.width;
+        height=img1.height;
+        maxColorValue=255;
+         
+        int size=width*height*3;
+        pixels.resize(size);
+
+        for(int i=0;i<size;i+=3){
+            pixels[i]=img1.pixels[i]  +  img2.pixels[i];
+            pixels[i+1]=img1.pixels[i+1]  +  img2.pixels[i+1];
+            pixels[i+2]=img1.pixels[i+2]  +  img2.pixels[i+2];
+
+        }
+
+    }
+
+};  
+
+
+
+
+// Function to write a PPM image to file
+bool writePPM(const char* filename, const PPMImage& img) {
+    ofstream file(filename, ios::binary);
+    if (!file) return false;
+
+    file << "P6\n" << img.width << " " << img.height << "\n" << img.maxColorValue << "\n";
+    file.write(reinterpret_cast<const char*>(img.pixels.data()), img.pixels.size());
+    return true;
+}
+
+
+
+
+
+
+// Function to create a green image
+PPMImage createGreenImage(int width, int height) {
+    PPMImage img;
+    img.width = width;
+    img.height = height;
+    img.maxColorValue = 255;
+    
+    size_t size = img.width * img.height * 3;
+    img.pixels.resize(size);
+    for(size_t i=0;i<size;i+=3){
+        img.pixels[i]=0;
+        img.pixels[i+1]=255;
+        img.pixels[i+2]=0;
+    }
+
+    return img;
+}
+
+// Function to create a red image
+PPMImage createRedImage(int width, int height) {
+    PPMImage img;
+    img.width = width;
+    img.height = height;
+    img.maxColorValue = 255;
+    
+    size_t size = img.width * img.height * 3;
+    img.pixels.resize(size);
+    for(size_t i=0;i<size;i+=3){
+        img.pixels[i]=255;
+        img.pixels[i+1]=0;
+        img.pixels[i+2]=0;
+    }
+
+    return img;
+}
+
+    
+
+
+bool readPPM(string& filename, PPMImage& img) {
+    ifstream file(filename, ios::binary);
+    if (!file) return false;
+
+    string header;
+    file >> header;
+    if (header != "P6") return false;
+
+    file >> img.width >> img.height >> img.maxColorValue;
+    file.ignore();
+
+    size_t size = img.width * img.height * 3;
+    img.pixels.resize(size);
+    file.read(reinterpret_cast<char*>(img.pixels.data()), size);
+
+    return true;
+}
+
+
+int main() {
+    PPMImage imgR = createRedImage(800, 600);
+    PPMImage imgG = createGreenImage(800,600); 
+    PPMImage imgMix;
+    imgMix=PPMImage(imgR,imgG);
+    
+    if(!writePPM("MIXoutput",imgMix)){
+    cout<<"image is not converted ";
+    }
+    else  cout<<"successful";
+
+
+    
+    
+    return 0;
+}
